@@ -1,0 +1,13 @@
+﻿<h3>Logout</h3>
+
+@page "/logout"
+@inject AppCursos.Services.SesionService sesion
+@inject NavigationManager nav
+
+@code {
+    protected override void OnInitialized()
+    {
+        sesion.Logout();
+        nav.NavigateTo("/login", forceLoad: true);
+    }
+}

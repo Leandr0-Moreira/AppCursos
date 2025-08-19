@@ -1,0 +1,126 @@
+﻿@page "/usuarios"
+@using AppCursos.Models
+@inject AppCursos.Services.UsuarioService usuarioService
+@inject AppCursos.Services.SesionService sesion
+@inject NavigationManager nav
+
+<h3 class="mb-3">Usuarios</h3>
+
+@if (!sesion.EstaLogueado)
+{
+    <div class="alert alert-info">Redirigiendo a login…</div>
+}
+else if (!EsAdmin)
+{
+    <div class="alert alert-danger">
+        <strong>403.</strong> Acceso denegado. Esta sección es solo para administradores.
+    </div>
+}
+else
+{
+    <div class="d-flex justify-content-end mb-2">
+        <a class="btn btn-primary" href="/usuario/crear">
+            <i class="bi bi-person-plus"></i> Nuevo usuario
+        </a>
+    </div>
+
+    @if (usuarioAEliminar is not null)
+    {
+        <div class="alert alert-warning d-flex justify-content-between align-items-center">
+            <div>
+                <strong>¿Eliminar usuario?</strong>
+                <span class="ms-2">Se eliminará <em>@usuarioAEliminar.Nombre</em> definitivamente.</span>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-secondary" @onclick="CancelarEliminar">
+                    Cancelar
+                </button>
+                <button class="btn btn-sm btn-danger" @onclick="ConfirmarEliminar">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+            </div>
+        </div>
+    }
+
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Foto</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var u in usuarioService.ObtenerTodos())
+            {
+                <tr>
+                    <td>
+                        <img src="@Img(u.ImagenPath)"
+                             width="40" height="40"
+                             class="rounded-circle"
+                             style="object-fit:cover"
+                             onerror="this.onerror=null;this.src='/images/placeholder.png';" />
+                    </td>
+                    <td>@u.Nombre</td>
+                    <td>@u.Email</td>
+                    <td><span class="badge bg-secondary">@u.Rol</span></td>
+                    <td class="text-end text-nowrap">
+                        <div class="btn-group" role="group" aria-label="Acciones">
+                            <a class="btn btn-outline-primary btn-sm" href="/usuario/@u.Id" title="Detalle">
+                                <i class="bi bi-person-vcard"></i>
+                            </a>
+                            <a class="btn btn-outline-secondary btn-sm" href="/usuario/editar/@u.Id" title="Editar">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <button class="btn btn-outline-danger btn-sm" title="Eliminar"
+                                    @onclick="() => PedirEliminar(u)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private bool EsAdmin =>
+        string.Equals(sesion.UsuarioActual?.Rol, "Admin", StringComparison.OrdinalIgnoreCase);
+
+    private Usuario? usuarioAEliminar;
+
+    protected override void OnInitialized()
+    {
+        if (!sesion.EstaLogueado)
+        {
+            var here = "/" + nav.ToBaseRelativePath(nav.Uri);
+            nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(here)}", true);
+        }
+    }
+
+    // Forzar ruta absoluta + placeholder
+    private string Img(string? path)
+    {
+        var p = (path ?? "").Trim();
+        if (string.IsNullOrWhiteSpace(p)) return "/images/placeholder.png";
+        if (p[0] != '/') p = "/" + p;
+        return p;
+    }
+
+    private void PedirEliminar(Usuario u) => usuarioAEliminar = u;
+
+    private void CancelarEliminar() => usuarioAEliminar = null;
+
+    private void ConfirmarEliminar()
+    {
+        if (usuarioAEliminar is null) return;
+        usuarioService.Eliminar(usuarioAEliminar.Id);
+        usuarioAEliminar = null;
+        StateHasChanged();
+    }
+}

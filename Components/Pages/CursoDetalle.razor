@@ -1,0 +1,65 @@
+﻿@page "/curso/{id:int}"
+@using AppCursos.Models
+@inject AppCursos.Services.CursoService cursoService
+@inject AppCursos.Services.SesionService sesion
+@inject NavigationManager nav
+
+<h3>Descripcion del curso</h3>
+
+@code {
+    [Parameter] public int id { get; set; }
+    private Curso? curso;
+
+    protected override void OnInitialized() => curso = cursoService.ObtenerPorId(id);
+
+    // Fuerza ruta absoluta y aplica placeholder si está vacío
+    private string Img(string? path)
+    {
+        var p = (path ?? "").Trim();
+        if (string.IsNullOrWhiteSpace(p)) return "/images/placeholder.png";
+        if (p[0] != '/') p = "/" + p;   // <-- clave: desde raíz
+        return p;
+    }
+
+    private void IrALoginConReturn()
+    {
+        sesion.Logout();
+        var aqui = "/" + nav.ToBaseRelativePath(nav.Uri);
+        nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(aqui)}");
+    }
+}
+
+@if (curso is null)
+{
+    <div class="alert alert-danger mt-3">Curso no encontrado.</div>
+}
+else
+{
+    <div class="card mt-3 shadow" style="max-width:640px;margin:auto;">
+        <img src="@Img(curso.ImagenPath)"
+             class="card-img-top"
+             alt="@curso.Titulo"
+             style="object-fit:cover;height:240px;"
+             onerror="this.onerror=null;this.src='/images/placeholder.png';" />
+
+        <div class="card-body">
+            <h4>@curso.Titulo</h4>
+            <p>@curso.Descripcion</p>
+            <span class="badge bg-info">@curso.Categoria</span>
+        </div>
+
+        <div class="card-footer text-end">
+            <a href="/cursos" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+            @if (sesion.EstaLogueado)
+            {
+                <button class="btn btn-success ms-2"><i class="bi bi-check-circle"></i> Inscribirme</button>
+            }
+            else
+            {
+                <button class="btn btn-outline-success ms-2" @onclick="IrALoginConReturn">
+                    <i class="bi bi-box-arrow-in-right"></i> Iniciá sesión para inscribirte
+                </button>
+            }
+        </div>
+    </div>
+}

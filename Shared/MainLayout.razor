@@ -1,0 +1,62 @@
+﻿@inherits LayoutComponentBase
+@using AppCursos.Services
+@inject SesionService sesion
+@inject NavigationManager nav
+
+<div class="container py-3">
+
+    @* Barra superior solo si NO es /login y hay sesión (usuario o invitado) *@
+    @if (!EsLogin && (sesion.EstaLogueado || sesion.EsInvitado))
+    {
+        <div class="d-flex justify-content-between mb-2">
+            <div class="d-flex gap-2">
+                <a href="/cursos" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-journal-text"></i> Cursos
+                </a>
+
+                @* Solo Admin ve Usuarios *@
+                @if (string.Equals(sesion.UsuarioActual?.Rol, "Admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    <a href="/usuarios" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-people"></i> Usuarios
+                    </a>
+                }
+            </div>
+
+            <a href="/logout" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-box-arrow-right"></i> Salir
+            </a>
+        </div>
+    }
+
+    @* Si es login, no envolvemos en card para evitar "caja dentro de caja" *@
+    @if (EsLogin)
+    {
+        @Body
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body">
+                @Body
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    bool EsLogin;
+
+    protected override void OnParametersSet()
+    {
+        var path = nav.ToBaseRelativePath(nav.Uri);
+
+        // quitar querystring si existe y normalizar
+        var q = path.IndexOf('?');
+        if (q >= 0) path = path[..q];
+        path = path.TrimEnd('/');
+
+        EsLogin = string.IsNullOrEmpty(path) ||
+                  path.Equals("login", StringComparison.OrdinalIgnoreCase);
+    }
+}

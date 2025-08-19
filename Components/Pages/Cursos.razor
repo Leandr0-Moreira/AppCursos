@@ -1,0 +1,26 @@
+﻿@page "/cursos"
+@using AppCursos.Models
+@inject AppCursos.Services.CursoService cursoService
+
+<h3 class="mb-3">Catálogo de Cursos</h3>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    @foreach (var curso in cursoService.ObtenerTodos())
+    {
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <img src="@curso.ImagenPath" class="card-img-top" alt="@curso.Titulo" style="object-fit:cover;height:180px;width=120">
+                <div class="card-body">
+                    <h5 class="card-title">@curso.Titulo</h5>
+                    <p class="card-text">@curso.Descripcion</p>
+                    <span class="badge bg-primary">@curso.Categoria</span>
+                </div>
+                <div class="card-footer text-end">
+                    <a class="btn btn-outline-primary btn-sm" href="/curso/@curso.Id">
+                        <i class="bi bi-search"></i> Ver más
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

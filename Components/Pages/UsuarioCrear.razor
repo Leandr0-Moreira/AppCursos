@@ -1,0 +1,158 @@
+﻿@page "/usuario/crear"
+@using System.ComponentModel.DataAnnotations
+@using System.IO
+@using AppCursos.Models
+@inject AppCursos.Services.UsuarioService usuarioService
+@inject AppCursos.Services.SesionService sesion
+@inject NavigationManager nav
+
+<h3>Nuevo usuario</h3>
+
+@code {
+    // Modelo del formulario (puedes usar AppCursos.Models.Usuario si ya trae DataAnnotations)
+    private UsuarioForm model = new()
+    {
+        Rol = "Alumno",
+        ImagenPath = "images/ana.jpg" // valor inicial
+    };
+
+    // Opciones de imágenes locales (ajusta a las que tengas)
+    private readonly List<string> imagenes = new()
+    {
+        "images/ana.jpg",
+        "images/pedro.jpg",
+        "images/laura.jpg"
+    };
+
+    private bool _enviando;
+
+    protected override void OnInitialized()
+    {
+        // Guard: debe estar logueado y ser Admin
+        if (!sesion.EstaLogueado)
+        {
+            var here = "/" + nav.ToBaseRelativePath(nav.Uri);
+            nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(here)}", true);
+            return;
+        }
+        if (!string.Equals(sesion.UsuarioActual?.Rol, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            nav.NavigateTo("/usuarios");
+            return;
+        }
+    }
+
+    private string Img(string? path)
+    {
+        var p = (path ?? "").Trim();
+        if (string.IsNullOrWhiteSpace(p)) return "/images/placeholder.png";
+        if (p[0] != '/') p = "/" + p;
+        return p;
+    }
+
+    private void Cancelar() => nav.NavigateTo("/usuarios");
+
+    private void OnValidSubmit()
+    {
+        if (_enviando) return;
+        _enviando = true;
+
+        // Mapear modelo del form a entidad
+        var u = new Usuario
+        {
+            Nombre = model.Nombre!.Trim(),
+            Email = model.Email!.Trim(),
+            Contrasena = model.Contrasena!,     // para demo (hardcode)
+            Rol = model.Rol!,
+            ImagenPath = model.ImagenPath!
+        };
+
+        usuarioService.Agregar(u);
+        nav.NavigateTo("/usuarios");
+    }
+
+    // DTO con validaciones (puedes moverlo a Models si querés reutilizar)
+    private class UsuarioForm
+    {
+        [Required, MinLength(2)]
+        public string? Nombre { get; set; }
+
+        [Required, EmailAddress]
+        public string? Email { get; set; }
+
+        [Required, MinLength(3)]
+        public string? Contrasena { get; set; }
+
+        [Required]
+        public string? Rol { get; set; }
+
+        [Required]
+        public string? ImagenPath { get; set; }
+    }
+}
+
+<div class="card mt-3">
+    <div class="card-body">
+
+        <EditForm Model="@model" OnValidSubmit="@OnValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="row g-3">
+                <div class="col-12 col-md-8">
+
+                    <div class="mb-3">
+                        <label class="form-label">Nombre</label>
+                        <InputText class="form-control" @bind-Value="model.Nombre" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <InputText class="form-control" @bind-Value="model.Email" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Contraseña</label>
+                        <InputText class="form-control" @bind-Value="model.Contrasena" type="password" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Rol</label>
+                        <InputSelect class="form-select" @bind-Value="model.Rol">
+                            <option value="Alumno">Alumno</option>
+                            <option value="Admin">Admin</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Imagen</label>
+                        <InputSelect class="form-select" @bind-Value="model.ImagenPath">
+                            @foreach (var img in imagenes)
+                            {
+                                <option value="@img">@Path.GetFileName(img)</option>
+                            }
+                        </InputSelect>
+                        <div class="form-text">Las imágenes deben existir en <code>wwwroot/images</code>.</div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4 d-flex flex-column align-items-center">
+                    <img src="@Img(model.ImagenPath)" class="rounded-circle mb-2"
+                         style="width:140px;height:140px;object-fit:cover"
+                         onerror="this.onerror=null;this.src='/images/placeholder.png';" />
+                    <span class="text-muted small">@model.ImagenPath</span>
+                </div>
+            </div>
+
+            <div class="mt-3 d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-secondary" @onclick="Cancelar">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </button>
+                <button class="btn btn-primary" disabled="@_enviando">
+                    <i class="bi bi-check2-circle"></i> Crear
+                </button>
+            </div>
+        </EditForm>
+
+    </div>
+</div>

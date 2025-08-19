@@ -1,0 +1,35 @@
+﻿<h3>Login</h3>
+
+@page "/loginjhvgf"
+@inject AppCursos.Services.UsuarioService usuarioService
+@inject AppCursos.Services.SesionService sesion
+@inject NavigationManager nav
+
+<h4>Iniciar sesión</h4>
+<div class="row g-3 mt-2">
+    <div class="col-12 col-md-6">
+        <label class="form-label">Elegir usuario demo:</label>
+        <select class="form-select" @onchange="OnSeleccion">
+            <option value="">-- seleccionar --</option>
+            @foreach (var u in usuarioService.ObtenerTodos())
+            {
+                <option value="@u.Id">@u.Nombre (@u.Email)</option>
+            }
+        </select>
+    </div>
+</div>
+
+@code {
+    private void OnSeleccion(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var id))
+        {
+            var u = usuarioService.ObtenerPorId(id);
+            if (u != null)
+            {
+                sesion.Login(u);
+                nav.NavigateTo("/cursos");
+            }
+        }
+    }
+}

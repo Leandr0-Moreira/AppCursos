@@ -1,0 +1,58 @@
+# --- Build / cache ---
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+TestResults/
+artifacts/
+publish/
+*.log
+
+# --- Visual Studio / Rider / VS Code ---
+.vs/
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+*.csproj.user
+
+# --- NuGet ---
+packages/
+.nuget/packages/
+*.nupkg
+*.snupkg
+project.lock.json
+*.lock.json
+
+# --- MAUI / Android / iOS / Windows packages ---
+**/bin/
+**/obj/
+**/*.apk
+**/*.aab
+**/*.keystore
+**/*.jks
+**/*.ipa
+*.msix
+*.msixbundle
+*.appx
+*.appxbundle
+*.appxupload
+
+# --- Xcode / CocoaPods (si compilas en macOS) ---
+**/*.xcuserstate
+**/*.xcworkspace/xcuserdata/
+**/*.xcuserdatad/
+**/Pods/
+
+# --- SO / temporales ---
+.DS_Store
+Thumbs.db
+*.tmp
+~$*
+*.swp
+
+# --- Mantener estáticos web ---
+!wwwroot/**

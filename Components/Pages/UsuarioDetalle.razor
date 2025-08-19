@@ -1,0 +1,45 @@
+﻿@page "/usuario/{id:int}"
+@using AppCursos.Models
+@inject AppCursos.Services.UsuarioService usuarioService
+
+<h3>Usuario</h3>
+
+@code {
+    [Parameter] public int id { get; set; }
+    private Usuario? usuario;
+
+    protected override void OnInitialized() => usuario = usuarioService.ObtenerPorId(id);
+
+    // Fuerza ruta absoluta y fallback
+    private string Img(string? path)
+    {
+        var p = (path ?? "").Trim();
+        if (string.IsNullOrWhiteSpace(p)) return "/images/placeholder.png";
+        if (p[0] != '/') p = "/" + p;
+        return p;
+    }
+}
+
+@if (usuario is null)
+{
+    <div class="alert alert-danger mt-3">Usuario no encontrado.</div>
+}
+else
+{
+    <div class="card mt-3 shadow" style="max-width:520px;margin:auto;">
+        <img src="@Img(usuario.ImagenPath)"
+             class="card-img-top"
+             alt="@usuario.Nombre"
+             style="object-fit:cover;height:220px;"
+             onerror="this.onerror=null;this.src='/images/placeholder.png';" />
+
+        <div class="card-body">
+            <h4>@usuario.Nombre</h4>
+            <p class="mb-1"><strong>Email:</strong> @usuario.Email</p>
+            <p><strong>Rol:</strong> @usuario.Rol</p>
+        </div>
+        <div class="card-footer text-end">
+            <a href="/usuarios" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+        </div>
+    </div>
+}
