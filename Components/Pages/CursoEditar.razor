@@ -1,0 +1,100 @@
+﻿@page "/admin/cursos/editar/{id:int}"
+@using System.ComponentModel.DataAnnotations
+@using AppCursos.Models
+@inject AppCursos.Services.CursoService cursos
+@inject AppCursos.Services.SesionService sesion
+@inject NavigationManager nav
+
+<h3 class="mb-3">Editar curso</h3>
+
+@if (!sesion.EstaLogueado || !EsAdmin)
+{
+    <div class="alert alert-danger">Acceso denegado.</div>
+}
+else if (modelo is null)
+{
+    <div class="alert alert-danger">Curso no encontrado.</div>
+}
+else
+{
+    <EditForm Model="@modelo" OnValidSubmit="@Guardar">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Título</label>
+            <InputText class="form-control" @bind-Value="modelo.Titulo" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Categoría</label>
+            <InputText class="form-control" @bind-Value="modelo.Categoria" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <InputTextArea class="form-control" rows="3" @bind-Value="modelo.Descripcion" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Imagen (ruta /images/...)</label>
+            <InputText class="form-control" @bind-Value="modelo.ImagenPath" />
+            <div class="form-text">Ej: <code>/images/word.jpg</code></div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-success"><i class="bi bi-check-circle"></i> Guardar</button>
+            <a class="btn btn-secondary" href="/cursos"><i class="bi bi-arrow-left"></i> Volver</a>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+    bool EsAdmin => string.Equals(sesion.UsuarioActual?.Rol, "Admin", StringComparison.OrdinalIgnoreCase);
+
+    private CursoForm? modelo;
+
+    protected override void OnInitialized()
+    {
+        var c = cursos.ObtenerPorId(id);
+        if (c is null) return;
+
+        modelo = new CursoForm
+        {
+            Id = c.Id,
+            Titulo = c.Titulo,
+            Categoria = c.Categoria,
+            Descripcion = c.Descripcion,
+            ImagenPath = c.ImagenPath?.TrimStart('/')
+        };
+    }
+
+    private void Guardar()
+    {
+        if (modelo is null) return;
+
+        var path = (modelo.ImagenPath ?? "").Trim();
+        if (!string.IsNullOrWhiteSpace(path) && path[0] != '/') path = "/" + path;
+
+        cursos.Editar(new Curso
+        {
+            Id = modelo.Id,
+            Titulo = modelo.Titulo?.Trim() ?? "",
+            Categoria = modelo.Categoria?.Trim() ?? "",
+            Descripcion = modelo.Descripcion?.Trim() ?? "",
+            ImagenPath = string.IsNullOrWhiteSpace(path) ? "/images/placeholder.png" : path
+        });
+
+        nav.NavigateTo("/admin/cursos");
+    }
+
+    private class CursoForm
+    {
+        public int Id { get; set; }
+        [Required] public string? Titulo { get; set; }
+        [Required] public string? Categoria { get; set; }
+        [Required] public string? Descripcion { get; set; }
+        public string? ImagenPath { get; set; }
+    }
+}
