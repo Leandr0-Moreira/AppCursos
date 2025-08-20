@@ -1,7 +1,7 @@
 # 📚 AppCursos
 
 Aplicación **.NET MAUI Blazor Hybrid** para la gestión de cursos digitales.  
-Este proyecto fue desarrollado como trabajo práctico integrador, implementando CRUD de usuarios, sistema de login con roles y vistas adaptadas a distintos perfiles.
+Este proyecto fue desarrollado como un trabajo práctico, implementando CRUD de usuarios, sistema de login con roles y vistas adaptadas a distintos perfiles.
 
 ---
 
@@ -38,14 +38,14 @@ Este proyecto fue desarrollado como trabajo práctico integrador, implementando 
 
 ## 📂 Estructura del proyecto
 AppCursos/
-│── Components/ → Componentes reutilizables
-│── Models/ → Clases de dominio (Usuario, etc.)
-│── Pages/ → Vistas Razor (Login, Usuarios, etc.)
-│── Services/ → Servicios de negocio (Sesión, Usuarios)
-│── Shared/ → Layout y componentes compartidos
-│── wwwroot/ → Recursos estáticos (css, imágenes, logo)
-│── AppCursos.sln → Solución principal
-│── MauiProgram.cs → Configuración inicial de la app
+* Components/ → Componentes reutilizables
+* Models/ → Clases de dominio (Usuario, etc.)
+* Pages/ → Vistas Razor (Login, Usuarios, etc.)
+* Services/ → Servicios de negocio (Sesión, Usuarios)
+* Shared/ → Layout y componentes compartidos
+* wwwroot/ → Recursos estáticos (css, imágenes, logo)
+* AppCursos.sln → Solución principal
+* MauiProgram.cs → Configuración inicial de la app
 
 👨‍💻 Autor
 
